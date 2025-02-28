@@ -39,9 +39,16 @@ jobs:
       
       - name: Update organization secret
         run: |
+          # Authenticate with the GitHub CLI
           gh auth login --with-token <<< ${{ secrets.GH_PAT }}
-          gh secret set BDBA_API_TOKEN --org open-component-model --visibility all --body "${{ env.BDBA_API_TOKEN }}"
-      
+
+          # Mask the BDBA API token in logs
+          echo "::add-mask::${{ env.BDBA_API_TOKEN }}"
+
+          # Set the secret using the masked token
+          echo "${{ env.BDBA_API_TOKEN }}" | gh secret set BDBA_API_TOKEN \ 
+          --org open-component-model --visibility all --body -
+
       - name: Log successful rotation
         run: |
           echo "BDBA API token successfully rotated at $(date)"
