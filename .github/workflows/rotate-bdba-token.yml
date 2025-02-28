@@ -11,13 +11,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
-      - name: Generate GitHub token
-        id: generate_token
-        uses: tibdex/github-app-token@v2
-        with:
-          app_id: ${{ secrets.OCMBOT_APP_ID }}
-          private_key: ${{ secrets.OCMBOT_PRIV_KEY }}
       
       - name: Generate new BDBA API token
         id: generate_bdba_token
@@ -46,7 +39,7 @@ jobs:
       
       - name: Update organization secret
         run: |
-          gh auth login --with-token <<< ${{ steps.generate_token.outputs.token }}
+          gh auth login --with-token <<< ${{ secrets.GH_PAT }}
           gh secret set BDBA_API_TOKEN --org open-component-model --body "${{ env.BDBA_API_TOKEN }}"
       
       - name: Log successful rotation
