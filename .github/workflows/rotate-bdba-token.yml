@@ -48,6 +48,4 @@ jobs:
           --visibility all \
           --body "${{ steps.generate_bdba_token.outputs.bdba_token }}"
 
-      - name: Log successful rotation
-        run: |
           echo "BDBA API token successfully rotated at $(date)"
