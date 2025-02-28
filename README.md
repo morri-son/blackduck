@@ -1,4 +1,9 @@
 # <img alt="chi" src="https://cdn.rawgit.com/go-chi/chi/master/_examples/chi.svg" width="220" />
+<!-- BADGES START -->
+
+ <img src="https://img.shields.io/badge/Black Duck-Monitored-237B46?labelColor=000">
+<!-- BADGES END -->
+
 
 
 [![GoDoc Widget]][GoDoc]
