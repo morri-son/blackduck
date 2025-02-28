@@ -40,7 +40,7 @@ jobs:
       
       - name: Update organization secret
         run: |
-          # Authenticate with the GitHub CLI
+          # Authenticate with the GitHub CLI and set the secret on org level
           gh auth login --with-token <<< ${{ secrets.GH_PAT }}
 
           gh secret set BDBA_API_TOKEN \
