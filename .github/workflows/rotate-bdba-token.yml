@@ -32,8 +32,9 @@ jobs:
             exit 1
           fi
           
-          # Store token in environment variable
-          echo "BDBA_API_TOKEN=$TOKEN" >> $GITHUB_ENV
+          # Store token as step output 
+          echo "::add-mask::$TOKEN"
+          echo "bdba_token=$TOKEN" >> $GITHUB_OUTPUT  
           
           echo "Successfully generated new BDBA API token"
       
@@ -42,12 +43,10 @@ jobs:
           # Authenticate with the GitHub CLI
           gh auth login --with-token <<< ${{ secrets.GH_PAT }}
 
-          # Mask the BDBA API token in logs
-          echo "::add-mask::${{ env.BDBA_API_TOKEN }}"
-
-          # Set the secret using the masked token
-          echo "${{ env.BDBA_API_TOKEN }}" | gh secret set BDBA_API_TOKEN \ 
-          --org open-component-model --visibility all --body -
+          gh secret set BDBA_API_TOKEN \
+          --org open-component-model \
+          --visibility all \
+          --body "${{ steps.generate_bdba_token.outputs.bdba_token }}"
 
       - name: Log successful rotation
         run: |
