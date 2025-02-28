@@ -1,0 +1,54 @@
+name: Monthly BDBA Token Rotation
+on:
+  schedule:
+    # Run on first of every month at 0:37 AM UTC
+    - cron: '38 0 1 * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  rotate-token:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Generate GitHub token
+        id: generate_token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.OCMBOT_APP_ID }}
+          private_key: ${{ secrets.OCMBOT_PRIV_KEY }}
+      
+      - name: Generate new BDBA API token
+        id: generate_bdba_token
+        run: |
+          # Generate new token from the Black Duck Binary Analysis API
+          # Using the validity period of 3888000 seconds (45 days)
+          RESPONSE=$(curl -s -X PUT \
+            -H "Content-Type: application/json" \
+            -u "${{ secrets.BDBA_USERNAME }}:${{ secrets.BDBA_PASSWORD }}" \
+            -d '{"validity": 3888000}' \
+            "https://bdba.tools.sap/api/key/")
+          
+          # Extract token from response
+          TOKEN=$(echo "$RESPONSE" | jq -r '.key.value')
+          
+          # Verify token was generated successfully
+          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+            echo "Failed to generate new token. API response: $RESPONSE"
+            exit 1
+          fi
+          
+          # Store token in environment variable
+          echo "BDBA_API_TOKEN=$TOKEN" >> $GITHUB_ENV
+          
+          echo "Successfully generated new BDBA API token"
+      
+      - name: Update organization secret
+        run: |
+          gh auth login --with-token <<< ${{ steps.generate_token.outputs.token }}
+          gh secret set BDBA_API_TOKEN --org open-component-model --body "${{ env.BDBA_API_TOKEN }}"
+      
+      - name: Log successful rotation
+        run: |
+          echo "BDBA API token successfully rotated at $(date)"
